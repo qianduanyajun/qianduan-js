@@ -1,0 +1,117 @@
+首先看一下这个简的构造函数，
+
+缺点就是函数里面的方法在会开辟在不同的内存空间里面，造成内存的资源浪费，同一个方法却要占用多个内存空间。
+
+     function Star(uname, age) {
+                this.uname = uname;
+                this.age = age;
+                sing:function fn(){
+                    console.log('我会唱歌');
+                    
+                }
+            }
+            var ldh = new Star('ldh', 20);
+            var zjl = new Star('zjl', 19);
+            console.dir(ldh);
+            console.dir(zjl);
+
+于是，研究构造函数里面的属性就变得比较重要了，最好是在构造函数里面能够有一个固定的属性，因为属性不会再去开辟另外的空间。
+
+    console.dir(Star);
+
+分析构造函数的所有属性，发现函数里面有一个属性prototype,这个属性又指向对象，所以也称为原型对象。其实就是一个原型的属性。将所有的方法都放在这个对象里面，就免去了每次调用方法都要开辟新的空间的问题了。
+
+    ƒ Star(uname, age)
+    	arguments: null
+    	caller: null
+    	length: 2
+    	name: "Star"
+    	prototype: {constructor: ƒ}
+    	__proto__: ƒ ()
+    	[[FunctionLocation]]: demo.html:13
+    	[[Scopes]]: Scopes[1]
+
+有了原型对象，如何将函数里面的方法放在原型对象里面呢，我们可以想一个问题，既然prototype是构造函数的一个属性，那么就可以通过对象点属性的方法调用属性，也就是Star.prototype的方法，可是prototype有时一个方法 ，在方法里面如何添加属性呢，很简单，对象点属性的方法，就成功的想到了Star.prototype.sing。
+
+一个疑问，这里的sing可以加上括号吗？答案是不可以。其实也很好理解，加上括号就是立即执行，函数只有在调用的时候才会执行，出现了矛盾。或者说这就是一个匿名函数。
+
+     Star.prototype.sing=function(){
+                console.log('我会唱歌');         
+    }
+
+因为原型对象使得资源利用率提高了，那么我在对像的调用的时候，方法又不在构造函数里面，是如何调用函数的方法的呢？
+
+     console.dir(ldh);
+    
+
+
+
+
+
+      console.dir(Star);
+    
+
+
+
+分析上面两个结果，原型对象和对象原型一样，也就是说实例对象的对象原型就是指向原型对象。再通过原型对象里面的constructor属性指回构造函数。
+
+constructor属性的作用是，可以得知某个实例对象，到底是哪一个构造函数产生的。 
+
+能不能将多个方法放在同一个原型对象里面呢。
+
+     Star.prototype.sing=function(){
+                console.log('我会唱歌');
+            }
+    Star.prototype.movie=function(){
+                console.log('我会演电影');
+            }
+
+       console.dir(Star.prototype.constructor);    //ƒ Star(uname, age) 
+    
+
+
+
+     Star.prototype ={
+                sing: function() {
+                    console.log('我会唱歌');
+                },
+                movie: function () {
+                    console.log('我会演电影');
+                }
+            }
+
+            console.dir(Star.prototype.constructor);    //ƒ Object()
+
+我们研究此时的原型对象的constructor是否依然指向Star,结果出乎所料，后面本以为简写的方法却指向了Object,其实也很好理解，上面是对象点属性的方法，不管如何，这个属性始终挂载在这个对象里面。而后面的方法，等于一个对象，也就是将原先的Star.prototype的对象内容都给覆盖了，自然会发现已经不再指向构造函数了。
+
+如何解决第二种情况呢？手动利用constrctor指回构造函数。
+
+     Star.prototype ={
+     			constrctor:Star(),		/手动添加constrctor属性
+                sing: function() {
+                    console.log('我会唱歌');
+                },
+                movie: function () {
+                    console.log('我会演电影');
+                }
+            }
+
+原型对象里面 的对象原型又指向哪一个呢？
+
+     console.dir(Star.prototype.__proto__);  
+
+
+
+可以看出指向Object这个对象。
+
+那么Objext的原型对象又指向谁呢，
+
+ console.dir(Object.prototype.proto); 
+
+总结一个图：原型链。
+
+
+
+
+
+
